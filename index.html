@@ -253,6 +253,58 @@
       border-radius: 0 0 3px 3px;
     }
 
+    /* ── LOGIN OVERLAY ─────────────────────────────────── */
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, #0f1318 0%, #1a0a10 60%, #880e4f 100%);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      transition: opacity .4s;
+    }
+    .login-overlay.hide { opacity: 0; pointer-events: none; }
+    .login-box {
+      background: var(--dark2);
+      border: 1px solid rgba(194,24,91,.3);
+      border-radius: 20px;
+      padding: 36px 28px 28px;
+      max-width: 320px; width: 100%;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(194,24,91,.2), 0 20px 60px rgba(0,0,0,.5);
+      animation: loginUp .4s ease;
+    }
+    @keyframes loginUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .login-logo { font-size: 2.6rem; margin-bottom: 10px; }
+    .login-box h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.35rem; font-weight: 700; color: #fff; margin-bottom: 4px;
+    }
+    .login-box .login-sub { font-size: .74rem; color: var(--muted); margin-bottom: 26px; }
+    .pin-dots {
+      display: flex; justify-content: center; gap: 16px; margin-bottom: 26px;
+    }
+    .pin-dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(194,24,91,.5);
+      background: transparent;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .pin-dot.filled { background: var(--mg2); border-color: var(--mg2); transform: scale(1.15); }
+    .pin-dot.error  { background: var(--red); border-color: var(--red); animation: shake .35s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+    .keypad {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;
+    }
+    .key {
+      height: 56px; border: 1px solid var(--line); border-radius: 12px;
+      background: var(--dark3); color: var(--txt);
+      font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600;
+      cursor: pointer; transition: all .12s;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .key:active { background: var(--mg); border-color: var(--mg); transform: scale(.92); }
+    .key.del { font-size: .95rem; color: var(--muted); }
+    .login-err { font-size: .74rem; color: #ef5350; font-weight: 600; min-height: 18px; }
+
     /* ── HOME PANEL ────────────────────────────────────── */
     .home-hero {
       background: linear-gradient(135deg, var(--dark3) 0%, var(--dark2) 100%);
@@ -561,6 +613,36 @@
 </head>
 <body>
 
+<!-- ── LOGIN ── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">🗳️</div>
+    <h2>Centro de Mando SPEN</h2>
+    <p class="login-sub">Ingresa tu contraseña de acceso</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="keypad">
+      <button class="key" onclick="pinKey('1')">1</button>
+      <button class="key" onclick="pinKey('2')">2</button>
+      <button class="key" onclick="pinKey('3')">3</button>
+      <button class="key" onclick="pinKey('4')">4</button>
+      <button class="key" onclick="pinKey('5')">5</button>
+      <button class="key" onclick="pinKey('6')">6</button>
+      <button class="key" onclick="pinKey('7')">7</button>
+      <button class="key" onclick="pinKey('8')">8</button>
+      <button class="key" onclick="pinKey('9')">9</button>
+      <button class="key" style="visibility:hidden"></button>
+      <button class="key" onclick="pinKey('0')">0</button>
+      <button class="key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
   <!-- TOP BAR -->
   <div class="topbar">
     <div class="topbar-left">
@@ -601,7 +683,7 @@
       <button class="nav-btn" onclick="openSim('simulacro1.html', 'Módulo A'); closeDrawer()">
         <span class="nav-icon">📄</span> Módulo A
       </button>
-      <button class="nav-btn" onclick="openSim('simulacro12.html', 'Módulo D'); closeDrawer()">
+      <button class="nav-btn" onclick="openSim('simulacro4.html', 'Módulo D'); closeDrawer()">
         <span class="nav-icon">🗳️</span> Módulo D
       </button>
     </div>
@@ -616,14 +698,14 @@
 
       <div class="home-hero">
         <div>
-          <h1>Bienvenida,<br><em>Ofelia Aguirre2</em></h1>
+          <h1>Bienvenida,<br><em>Ofelia Aguirre</em></h1>
           <p>Selecciona un módulo para comenzar. Cada simulacro genera preguntas en <strong style="color:var(--mg2)">orden aleatorio</strong>.</p>
         </div>
         <div class="hero-badge">🗳️</div>
       </div>
 
       <div class="open-note">
-        <strong>💡 Cómo abrir simulacros:</strong> Hola, Ofelia2. Al tocar un módulo se abrirá en una nueva pestaña.
+        <strong>💡 Cómo abrir simulacros:</strong> Hola, Ofelia. Al tocar un módulo se abrirá en una nueva pestaña.
       </div>
 
       <!-- Nivel 1 -->
@@ -655,8 +737,7 @@
             <div class="mod-card" onclick="openSim('simulacro4.html','Módulo D')">
               <span class="mod-icon">🗳️</span>
               <h3>Módulo D</h3>
-              <span>Conocimientos Vocalía Ejecutiva INE</span>
-     
+              <span>Conocimientos VCEyEC INE</span>
             </div>
           </div>
         </div>
@@ -762,6 +843,42 @@
     <iframe class="pdf-iframe" id="pdfFrame" src=""></iframe>
   </div>
 
+  <script>
+    // ── LOGIN ──
+    (function(){
+      const PIN = '1234';
+      let entered = '';
+      function updateDots(error) {
+        for (let i = 0; i < 4; i++) {
+          const d = document.getElementById('pd' + i);
+          d.className = 'pin-dot' + (i < entered.length ? ' filled' : '') + (error ? ' error' : '');
+        }
+      }
+      window.pinKey = function(n) {
+        if (entered.length >= 4) return;
+        entered += n;
+        updateDots(false);
+        if (entered.length === 4) {
+          if (entered === PIN) {
+            const ov = document.getElementById('loginOverlay');
+            ov.classList.add('hide');
+            setTimeout(() => ov.remove(), 420);
+          } else {
+            updateDots(true);
+            document.getElementById('loginErr').textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
+            setTimeout(() => {
+              entered = '';
+              updateDots(false);
+              document.getElementById('loginErr').textContent = '';
+            }, 900);
+          }
+        }
+      };
+      window.pinDel = function() {
+        if (entered.length > 0) { entered = entered.slice(0, -1); updateDots(false); }
+      };
+    })();
+  </script>
   <script>
     // Date chip
     const d = new Date();
